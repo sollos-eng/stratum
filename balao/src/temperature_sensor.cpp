@@ -1,36 +1,46 @@
-#include "temperature_sensor.h"
+#include <Arduino.h>
+
+
+/*
+
+ * Rui Santos 
+ * Complete Project Details https://randomnerdtutorials.com
+ */
+
+// Include the libraries we need
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+// Data wire is connected to GPIO15
 #define ONE_WIRE_BUS 15
-#define RELAY_PIN 26
+// Setup a oneWire instance to communicate with a OneWire device
+OneWire oneWire(ONE_WIRE_BUS);
+// Pass our oneWire reference to Dallas Temperature sensor 
+DallasTemperature sensors(&oneWire);
 
-static OneWire oneWire(ONE_WIRE_BUS);
-static DallasTemperature sensors(&oneWire);
-static DeviceAddress sensor1;
-static DeviceAddress sensor2;
+DeviceAddress sensor1 = { 0x28, 0x22, 0xF8, 0x95, 0xF0, 0x1, 0x3C, 0x6A };
+DeviceAddress sensor2 = { 0x28, 0xE, 0xA1, 0x46, 0xD4, 0x7D, 0x1F, 0x7E };
+DeviceAddress sensor3 = { 0x28, 0xFF, 0x64, 0x1E, 0XCD, 0X9, 0X55, 0X7E };
 
-void setupTemperatureSensors() {
-    sensors.begin();
-    pinMode(RELAY_PIN, OUTPUT);
-    digitalWrite(RELAY_PIN, LOW);
-    if (!sensors.getAddress(sensor1, 0)) {
-        Serial.println("Unable to find address for sensor1");
-    }
-    if (!sensors.getAddress(sensor2, 1)) {
-        Serial.println("Unable to find address for sensor2");
-    }
+void setup(void){
+  Serial.begin(115200);
+  sensors.begin();
 }
 
-bool readTemperatures(float &t1, float &t2, bool &heating) {
-    sensors.requestTemperatures();
-    t1 = sensors.getTempC(sensor1);
-    t2 = sensors.getTempC(sensor2);
-    if (t1 == DEVICE_DISCONNECTED_C || t2 == DEVICE_DISCONNECTED_C) {
-        return false;
-    }
-    heating = (t2 <= 28.0f);
-    digitalWrite(RELAY_PIN, heating ? HIGH : LOW);
-    return true;
-
+void loop(void){ 
+  Serial.print("Requesting temperatures...");
+  sensors.requestTemperatures(); // Send the command to get temperatures
+  Serial.println("DONE");
+  
+  Serial.print(">Sensor 1(*C): ");
+  Serial.println(sensors.getTempC(sensor1)); 
+ 
+  Serial.print(">Sensor 2(*C): ");
+  Serial.println(sensors.getTempC(sensor2)); 
+  
+  Serial.print(">Sensor 3(*C): ");
+  Serial.println(sensors.getTempC(sensor3)); 
+  
+  
+  delay(2000);
 }
