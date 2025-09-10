@@ -1,36 +1,18 @@
-#include "temperature_sensor.h"
-#include <OneWire.h>
-#include <DallasTemperature.h>
+#include "DS18B20Multi.h"
 
-#define ONE_WIRE_BUS 15
-#define RELAY_PIN 26
+// Construtor: inicializa OneWire e DallasTemperature com pino fixo
+DS18B20Multi::DS18B20Multi()
+  : oneWire(PINO_DS18B20), sensors(&oneWire) {}
 
-static OneWire oneWire(ONE_WIRE_BUS);
-static DallasTemperature sensors(&oneWire);
-static DeviceAddress sensor1;
-static DeviceAddress sensor2;
-
-void setupTemperatureSensors() {
-    sensors.begin();
-    pinMode(RELAY_PIN, OUTPUT);
-    digitalWrite(RELAY_PIN, LOW);
-    if (!sensors.getAddress(sensor1, 0)) {
-        Serial.println("Unable to find address for sensor1");
-    }
-    if (!sensors.getAddress(sensor2, 1)) {
-        Serial.println("Unable to find address for sensor2");
-    }
+// Inicializa os sensores
+void DS18B20Multi::iniciar() {
+  sensors.begin();
 }
 
-bool readTemperatures(float &t1, float &t2, bool &heating) {
-    sensors.requestTemperatures();
-    t1 = sensors.getTempC(sensor1);
-    t2 = sensors.getTempC(sensor2);
-    if (t1 == DEVICE_DISCONNECTED_C || t2 == DEVICE_DISCONNECTED_C) {
-        return false;
-    }
-    heating = (t2 <= 28.0f);
-    digitalWrite(RELAY_PIN, heating ? HIGH : LOW);
-    return true;
-
+// Lê todos os sensores e retorna os valores por referência
+void DS18B20Multi::lerTodos(float &t1, float &t2, float &t3) {
+  sensors.requestTemperatures();
+  t1 = sensors.getTempC(sensor1);
+  t2 = sensors.getTempC(sensor2);
+  t3 = sensors.getTempC(sensor3);
 }
